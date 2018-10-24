@@ -1,35 +1,54 @@
 var express = require("express"),
+    methodOverride = require("method-override"),
     app = express(),
     bodyParser = require("body-parser"),
-    mongoose = require("mongoose");
+    mongoose = require("mongoose"),
+    Campground = require("./models/campground"),
+    Comment = require("./models/comment"),
+    passport = require("passport"),
+    LocalStrategy = require("passport-local"),
+    User = require("./models/user"),
+    seedDB = require("./seeds"),
+    flash = require("connect-flash");
+    
+    /// requiring routes
+    var commentRoutes = require("./routes/comments"),
+    campgroundRoutes = require("./routes/campgrounds"),
+    indexRoutes = require("./routes/index");
+    
+    app.use(methodOverride("_method"));
+// seed the database
+// seedDB();
 
 mongoose.connect("mongodb://localhost/yelp_camp");
 
-var campgroundSchema = new mongoose.Schema({
-    name: String,
-    image: String,
-    description: String
-});
-
-var Campground = mongoose.model("Campground", campgroundSchema);
-
-// Campground.create(
-//     {
-//         name: "Granite HIll",
-//         image: "https://farm4.staticflickr.com/3487/3753652204_a752eb417d.jpg",
-//         description: "This is a huge hill, no bathrooms, no water"
-//     }, function (err, success) {
-//         if (err) {
-//             console.log("There was an erro", err);
-//         } else {
-//             console.log(success);
-//         }
-//     })
-
-
-
-
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.static(__dirname + "/public"))
+// passport confing
+
+app.use(require("express-session")({
+    secret: "Once again Rusty wins",
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use(flash());
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(function(req, res, next) {
+    res.locals.currentUser = req.user;
+    res.locals.error = req.flash("error");
+    res.locals.success = req.flash("success");
+    next();
+})
+passport.use(new LocalStrategy(User.authenticate()));
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+app.use(indexRoutes);
+app.use("/campgrounds/:id/comments", commentRoutes);
+app.use("/campgrounds", campgroundRoutes);
 
 app.set("view engine", "ejs");
 
@@ -37,46 +56,6 @@ app.get("/", function (req, res) {
     res.render("home-page");
 });
 
-app.get("/campgrounds", function (req, res) {
-
-    Campground.find({}, function(err, success) {
-        if(err) {
-            console.log(err);
-        } else {
-            res.render("campgrounds", { campgrounds: success })
-        }
-    })
-});
-
-app.post("/campgrounds", function (req, res) {
-    var name = req.body.name;
-    var image = req.body.image;
-    var description = req.body.description;
-    var newCampground = {name: name, image: image, description: description};
-
-    Campground.create(newCampground, function(err, success) {
-        if(err) {
-            console.log(err);
-        } else {
-            res.redirect("/campgrounds");
-        }
-    })
-});
-
-app.get("/campgrounds/new", function (req, res) {
-    res.render("new");
-});
-
-app.get("/campgrounds/:id", function(req, res) {
-    Campground.findById(req.params.id, function(err, success) {
-        if(err) {
-            console.log(err);
-        } else {
-            res.render("show", {campground: success})
-        }
-    })
-})
-
 app.listen("3000", process.env.IP, function () {
-    console.log("server has started");
-});
+        console.log("server has started")
+    });
