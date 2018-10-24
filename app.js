@@ -20,7 +20,9 @@ var express = require("express"),
 // seed the database
 // seedDB();
 
-mongoose.connect("mongodb://localhost/yelp_camp");
+// mongoose.connect("mongodb://localhost/yelp_camp");
+mongoose.connect("mongodb://biki1992:elpaso1906@ds139883.mlab.com:39883/yelp_camp")
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
