@@ -19,11 +19,9 @@ var express = require("express"),
     app.use(methodOverride("_method"));
 // seed the database
 // seedDB();
-// mongoose.connect("mongodb://localhost/yelp_camp");
-mongoose.connect(process.env.DATABASEURL)
 
-//mongodb://biki1992:elpaso1906@ds139883.mlab.com:39883/yelp_camp
-
+var url = process.env.DATABASEURL || "mongodb://localhost/yelp_camp";
+mongoose.connect(url);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -60,5 +58,5 @@ app.get("/", function (req, res) {
 });
 
 app.listen(process.env.PORT || 3000 , process.env.IP, function () {
-        console.log("server has started on ")
+        console.log("server has started")
     });
