@@ -19,9 +19,10 @@ var express = require("express"),
     app.use(methodOverride("_method"));
 // seed the database
 // seedDB();
-
 // mongoose.connect("mongodb://localhost/yelp_camp");
-mongoose.connect("mongodb://biki1992:elpaso1906@ds139883.mlab.com:39883/yelp_camp")
+mongoose.connect(process.env.DATABASEURL)
+
+//mongodb://biki1992:elpaso1906@ds139883.mlab.com:39883/yelp_camp
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -58,6 +59,6 @@ app.get("/", function (req, res) {
     res.render("home-page");
 });
 
-app.listen(process.env.PORT, process.env.IP, function () {
-        console.log("server has started")
+app.listen(process.env.PORT || 3000 , process.env.IP, function () {
+        console.log("server has started on ")
     });
